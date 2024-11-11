@@ -10,6 +10,3 @@
 | 5. | Hedieh Sajedi, Nastaran Pardakhti / 2019 | Age Prediction Based on Brain MRI Image: A Survey | Brain age prediction, Brain MRI | Mai multe tehnici de predictie a varstei | Sunt analizate diverse tipuri de metode de procesare a imaginilor (pixel-based, voxel-based si surface-based) si diverse modele de predictie de Machine Learning (SVR, GPR) si Deep Learning (CNN) | SVM Voxel based:  Accuracy = 96.25%   MAE = 5.08    Using small kernel size  GR = 97.6%  SS = 100%  SC = 95.8% | Costuri computationale ridicate, senzitivitate la calitatea imaginilor |   |
 
 ### Arhitectura propusa
-<p align="center">
-  <img src="./Diagrama/DiagramaWiDS.png">
-</p>
