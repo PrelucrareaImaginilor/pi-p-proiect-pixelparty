@@ -11,5 +11,5 @@
 
 ### Arhitectura propusa
 <p align="center">
-  <img src="Diagrama/DiagramaWiDS.png">
+  <img src="Diagrama/Diagrama.png">
 </p>
