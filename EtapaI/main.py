@@ -61,7 +61,7 @@ def main():
     endLinear = time.time()
     
     LinearRMSE = np.mean((yTest - yPredict)**2)**(1/2)
-    print(f"RMSE linear: {linearRMSE}")
+    print(f"RMSE linear: {LinearRMSE}")
     print (f"Time linear: {endLinear - startLinear}")
 
     # RIDGE REGRESSION
