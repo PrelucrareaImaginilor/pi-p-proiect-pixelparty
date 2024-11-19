@@ -1,17 +1,10 @@
 import os
 import time
-
 import numpy as np
 import pandas as pd
-from cvxopt import matrix, solvers
 from matplotlib import pyplot as plt
 from sklearn.linear_model import LinearRegression, Ridge
 from sklearn.svm import SVR
-
-
-def kernelLinear(x1, x2):
-    rez = np.dot(x1, x2) # x1 * x2'
-    return rez
 
 
 def main():
@@ -24,13 +17,13 @@ def main():
     metadata_directory = 'TestData/metadata/training_metadata.csv'
 
 
-    # Initialize an empty matrix for functional connectives for each subject
-    n = 200
-    FC = np.zeros((subjects, n*(n+1)//2))
-    ID = np.empty(subjects, dtype='U12')
+    # Initialize an empty array for each subject's functional matrix
+    n = 200 # the size of the square matrix
+    FC = np.zeros((subjects, n*(n+1)//2)) # FC[i] = the upper triangular values from the subject's matrix
+    ID = np.empty(subjects, dtype='U12') # ID[i] = the subject's ID 
 
 
-    # Loop through each .tsv file to populate the feature matrix
+    # Loop through each .tsv file to populate FC and ID
     for i, file in enumerate(files):
         FCMatrix = pd.read_csv(os.path.join(data_directory, file), sep='\t', header=None).values
         FC[i] = FCMatrix[np.triu_indices_from(FCMatrix)]
@@ -39,19 +32,21 @@ def main():
 
     # Make a dictionary with the additional info for each participant
     val = pd.read_csv(metadata_directory)
-    data = list(zip(val['sex'].values, val['age'].values))
+    data = list(zip(val['sex'].values, val['age'].values)) # Select only the 'sex' and 'age' columns
     data_id = val['participant_id'].values
 
     additional = {}
-    for i, (sex, age) in zip(data_id, data):
-        additional[i] = (sex, age)
+    for id, (sex, age) in zip(data_id, data):
+        additional[id] = (sex, age)
 
+    # Select the age of each subject in order
     y = np.zeros(subjects, dtype='double')
     for i in range(subjects):
-        y[i] = additional[ID[i]][1]
+        y[i] = additional[ID[i]][1] 
 
     # Monte Carlo partitioning
-    partition = (len(FC)+1)//2
+    partition = (len(FC)+1)//2 # Split in half
+    
     xTrain = FC[0:partition]
     yTrain = y[0:partition]
 
@@ -64,12 +59,12 @@ def main():
     linear.fit(xTrain, yTrain)
     yPredict = linear.predict(xTest)
     endLinear = time.time()
-
-    linearRMSE = np.mean((yTest - yPredict)**2)**(1/2)
+    
+    LinearRMSE = np.mean((yTest - yPredict)**2)**(1/2)
     print(f"RMSE linear: {linearRMSE}")
     print (f"Time linear: {endLinear - startLinear}")
 
-    # Ridge Regression
+    # RIDGE REGRESSION
     startRidge = time.time()
     ridge = Ridge()
     ridge.fit(xTrain, yTrain)
@@ -80,7 +75,7 @@ def main():
     print(f"\nRMSE Ridge: {RidgeRMSE}")
     print(f"Time Ridge: {endRidge - startRidge}")
 
-    # SVR linear
+    # SVR LINEAR
     startSVRLin = time.time()
     svr = SVR(kernel = "linear")
     svr.fit(xTrain, yTrain)
@@ -91,7 +86,7 @@ def main():
     print(f"\nRMSE SVR linear: {SVRRMSELin}")
     print(f"Time SVR linear: {endSVRLin - startSVRLin}")
 
-    # SVR poly
+    # SVR POLYNOMIAL
     startSVRPoly = time.time()
     svr2 = SVR(kernel="poly")
     svr2.fit(xTrain, yTrain)
@@ -102,7 +97,7 @@ def main():
     print(f"\nRMSE SVR poly: {SVRRMSEPoly}")
     print(f"Time SVR poly: {endSVRPoly - startSVRPoly}")
 
-    # SVR gauss
+    # SVR GAUSSIAN
     startSVRGauss = time.time()
     svr3 = SVR(kernel="rbf")
     svr3.fit(xTrain, yTrain)
@@ -113,7 +108,7 @@ def main():
     print(f"\nRMSE SVR Gauss: {SVRRMSEGauss}")
     print(f"Time SVR Gauss: {endSVRGauss - startSVRGauss}")
 
-    # SVR gauss
+    # SVR SIGMOID
     startSVRSigm = time.time()
     svr4 = SVR(kernel="sigmoid")
     svr4.fit(xTrain, yTrain)
@@ -127,7 +122,7 @@ def main():
 
     # PLOTTING
     models = ["Linear", "Ridge", "SVR Linear", "SVR Poly", "SVR Gauss", "SVR Sigmoid"]
-    RMSE_values = [linearRMSE, RidgeRMSE, SVRRMSELin, SVRRMSEPoly, SVRRMSEGauss, SVRRMSESigm]
+    RMSE_values = [LinearRMSE, RidgeRMSE, SVRRMSELin, SVRRMSEPoly, SVRRMSEGauss, SVRRMSESigm]
 
     # Time values for each model
     time_values = [
@@ -163,10 +158,11 @@ def main():
     #PLOT PREDICTIONS
     predictions = [yPredict, yPredictSVRRidge, yPredictSVRLin, yPredictSVRPoly, yPredictSVRGauss, yPredictSVRSigm]
     model_names = ["Linear", "Ridge", "SVR Linear", "SVR Poly", "SVR Gauss", "SVR Sigmoid"]
+    
     # Loop over each model to plot its predicted vs. actual values
     for y_pred, name in zip(predictions, model_names):
-        plt.figure(figsize=(8, 6))  # Create a new figure for each plot
-        plt.scatter(yTest, y_pred, alpha=0.6, color='blue', label="Predicted vs Actual")
+        plt.figure(figsize=(8, 6))
+        plt.scatter(yTest, y_pred, color='blue', label="Predicted vs Actual")
         plt.plot([yTest.min(), yTest.max()], [yTest.min(), yTest.max()], 'r--', lw=2, label="Perfect Fit")
 
         # Labels, title, and legend with increased font size
